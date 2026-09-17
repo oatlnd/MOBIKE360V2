@@ -1,0 +1,11 @@
+﻿.env
+.env.*
+!.env.example
+
+__MACOSX/
+node_modules/
+vendor/
+.dart_tool/
+build/
+.idea/
+.vscode/
