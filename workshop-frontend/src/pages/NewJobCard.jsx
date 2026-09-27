@@ -137,7 +137,7 @@ const NewJobCard = () => {
         return [
             { id: 'created', name: 'Job Card Created', template: 'Hi {CustomerName}, your vehicle job card #{JobNumber} has been created at Ratnam Service Station. Est amount: {EstAmount}.' },
             { id: 'completed', name: 'Service Completed', template: 'Hi {CustomerName}, your vehicle for job card #{JobNumber} is completed and ready for pickup. Total amount: {EstAmount}. Thank you - Ratnam Service Station.' },
-            { id: 'invoiced', name: 'Invoice Generated', template: 'Dear {CustomerName}, thank you for choosing Ratnam Service Station. Invoice for job #{JobNumber} has been generated. Total paid: {PaidAmount}.' }
+            { id: 'invoiced', name: 'Invoice Generated', template: 'Dear {CustomerName}, thank you for choosing Ratnam Service Station. Invoice for job #{JobNumber} has been generated. Total paid: {PaidAmount}.' },
         ];
     }, [settings?.sms_templates]);
 
@@ -250,6 +250,10 @@ const NewJobCard = () => {
     const watchedModel = watch('model');
     const watchedEngineNo = watch('engine_no');
     const watchedChassisNo = watch('chassis_no');
+    const watchedPurpose = watch('purpose');
+    const isFreeServiceSelected = Array.isArray(watchedPurpose)
+        ? watchedPurpose.includes('Free Service')
+        : watchedPurpose === 'Free Service';
 
     // Custom makes input support
     const [customMake, setCustomMake] = useState('');
@@ -862,7 +866,7 @@ const NewJobCard = () => {
                                                     handleBikeNumberBlur(e.target.value);
                                                 }}
                                                 error={!!errors.bike_number}
-                                                helperText={bikeLookupLoading ? '🔍 Looking up bike...' : errors.bike_number ? 'Bike number is required' : !isEditMode ? 'Leave field to auto-fill if bike is known' : ''}
+                                                helperText={bikeLookupLoading ? '🔍 Looking up bike...' : errors.bike_number ? 'Bike number is required' : !isEditMode ? 'Leave field to auto-fill if a previous record exists.' : ''}
                                                 InputLabelProps={{
                                                     shrink: true,
                                                 }}
@@ -1005,6 +1009,9 @@ const NewJobCard = () => {
                                     <Controller
                                         name="engine_no"
                                         control={control}
+                                        rules={{
+                                            required: isFreeServiceSelected ? 'Engine No. is required when Free Service is selected' : false,
+                                        }}
                                         render={({ field }) => (
                                             <TextField
                                                 {...field}
@@ -1013,6 +1020,8 @@ const NewJobCard = () => {
                                                 disabled={isInvoiced || isViewMode}
                                                 value={field.value || ''}
                                                 onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                                                error={!!errors.engine_no}
+                                                helperText={errors.engine_no?.message || ''}
                                                 InputLabelProps={{
                                                     shrink: true,
                                                 }}
@@ -1829,8 +1838,6 @@ const NewJobCard = () => {
                                             const changes = audit.changes || {};
                                             const isSmsAction = audit.action === 'sms_sent' || audit.action === 'sms_failed' || audit.action === 'SMS Sent' || audit.action === 'SMS Failed';
                                             const isSmsFailed = audit.action === 'sms_failed' || audit.action === 'SMS Failed' || changes.status === 'failed';
-
-                                            // Build list of meaningful change lines for standard audits
                                             const changeLines = [];
 
                                             if (changes.status && !isSmsAction) {
@@ -1933,7 +1940,6 @@ const NewJobCard = () => {
                                                         </Typography>
                                                     </Box>
 
-                                                    {/* SMS Specific Audit Details */}
                                                     {isSmsAction && (
                                                         <Box sx={{ mt: 1 }}>
                                                             <Box display="flex" flexWrap="wrap" gap={1} alignItems="center" mb={0.5}>
@@ -1979,7 +1985,6 @@ const NewJobCard = () => {
                                                                 </Typography>
                                                             )}
 
-                                                            {/* Collapsible API Response Viewer */}
                                                             {changes.api_response && (
                                                                 <Accordion disableGutters elevation={0} sx={{ mt: 0.75, bgcolor: 'transparent', '&:before': { display: 'none' } }}>
                                                                     <AccordionSummary
@@ -2013,7 +2018,6 @@ const NewJobCard = () => {
                                                         </Box>
                                                     )}
 
-                                                    {/* Standard change lines */}
                                                     {!isSmsAction && changeLines.length > 0 && (
                                                         <Stack spacing={0.5} sx={{ mt: 1 }}>
                                                             {changeLines.map((line, li) => (
@@ -2023,7 +2027,7 @@ const NewJobCard = () => {
                                                                     </Typography>
                                                                     {line.old !== undefined ? (
                                                                         <Box display="flex" alignItems="center" gap={0.5}>
-                                                                            <Chip label={line.old} size="small" variant="outlined" sx={{ fontSize: '0.65rem', height: 18, textDecoration: 'line-through', opacity: 0.6 }} />
+                                                                            <Chip label={line.old} size="small" variant="outlined" sx={{ fontSize: '0.65rem', height: 18, textDecoration: 'line-through' }} />
                                                                             <Typography variant="caption" color="textSecondary">→</Typography>
                                                                             <Chip label={line.new} size="small" color={line.color} sx={{ fontSize: '0.65rem', height: 18, fontWeight: 700 }} />
                                                                         </Box>
@@ -2242,7 +2246,7 @@ const NewJobCard = () => {
                                 </Grid>
                                 {cashTendered && (
                                     <Grid item xs={12}>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1.5, borderRadius: '8px', bgcolor: 'success.light', color: 'success.dark', opacity: 0.95 }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1.5, borderRadius: '8px', bgcolor: 'success.light', color: 'success.dark' }}>
                                             <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>Balance to be given:</Typography>
                                             <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                                                 Rs. {formatAmount((parseFloat(cashTendered) || 0) - (parseFloat(paidAmount) || 0))}
