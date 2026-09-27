@@ -111,4 +111,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('payroll/runs/{payrollRun}/status', [PayrollController::class, 'updateStatus']);
     Route::get('payroll/runs/{payrollRun}/export-eft', [PayrollController::class, 'exportEFT']);
 
+    Route::get('/ping', function () {
+    return response()->json([
+        'status' => 'ok',
+        'timestamp' => now()->toIso8601String(),
+        'message' => 'Deployment test successful!'
+    ]);
+});
 });
