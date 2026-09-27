@@ -56,6 +56,12 @@ const Layout = () => {
                     }}
                 >
                     <Outlet />
+                    {/* Application Version Footer */}
+                      <Box component="footer" sx={{ mt: 'auto', pt: 2, textAlign: 'right' }}>
+                     <Typography variant="caption" color="text.secondary" className="version-label">
+                        v{process.env.REACT_APP_VERSION || process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0'}
+                     </Typography>
+          </Box>
                 </Container>
             </Box>
         </Box>
